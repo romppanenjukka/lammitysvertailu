@@ -1,9 +1,10 @@
+
 name: Huomisen lammitysvertailu sahkopostiin
+
 on:
   schedule:
-    # 15:20 Suomessa: kesällä 12:20 UTC, talvella 13:20 UTC.
-    - cron: '20 12 * * *'
-    - cron: '20 13 * * *'
+    - cron: '20 15 * * *'
+      timezone: 'Europe/Helsinki'
   workflow_dispatch:
 
 permissions:
@@ -13,13 +14,18 @@ jobs:
   email:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
           cache: 'pip'
-      - run: pip install -r requirements.txt
+
+      - name: Asenna kirjastot
+        run: pip install -r requirements.txt
+
       - name: Laheta vertailu
         env:
           GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
