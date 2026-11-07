@@ -3,8 +3,11 @@ name: Huomisen lämmitysvertailu sähköpostiin
 
 on:
   schedule:
+  #kellon aika on talvella + 2h
     - cron: '59 14 * * *'
     
+    
+ 
   workflow_dispatch:
 
 permissions:
