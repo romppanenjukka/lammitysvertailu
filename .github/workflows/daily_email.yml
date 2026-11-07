@@ -3,8 +3,8 @@ name: Huomisen lämmitysvertailu sähköpostiin
 
 on:
   schedule:
-  #kellon aika on talvella + 2h
-    - cron: '59 14 * * *'
+  #kellon aika on talvella + 2h cron 30 12 tarkoittaa 12.30 #
+    - cron: '30 12 * * *'
     
   workflow_dispatch:
 
