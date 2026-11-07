@@ -1,9 +1,9 @@
 name: Huomisen lammitysvertailu sahkopostiin
 on:
   schedule:
-    # 15:20 Suomessa: kesällä 12:20 UTC, talvella 13:20 UTC.
+    # 14:20 Suomessa: kesällä 11:20 UTC, talvella 12:20 UTC.
+    - cron: '20 11 * * *'
     - cron: '20 12 * * *'
-    - cron: '20 13 * * *'
   workflow_dispatch:
 
 permissions:
