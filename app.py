@@ -74,7 +74,7 @@ else:
 
 plot = results.copy()
 plot['kellonaika'] = plot['aika'].dt.tz_convert(TZ).dt.strftime('%H:%M')
-# Kustannukset vasemmalla akselilla, ulkolämpötila oikealla akselilla.
+# Kustannukset vasemmalla, ulkolämpötila ja sähkön spot-hinta omilla oikean puolen akseleillaan.
 # Käytetään aikaleimoja x-akselilla: myös kesä-/talviaikaan siirtymisen tunnit säilyvät.
 fig = make_subplots(specs=[[{"secondary_y": True}]])
 fig.add_trace(go.Scatter(x=plot['aika'], y=plot['vilp_euro'],
@@ -92,11 +92,24 @@ fig.add_trace(go.Scatter(x=plot['aika'], y=plot['ulkolampotila'],
                          line=dict(color='#c03956', width=3, dash='dot'),
                          hovertemplate='%{x|%H:%M}<br>Ulkolämpötila: %{y:.0f} °C<extra></extra>'),
               secondary_y=True)
-fig.update_layout(title='Tuntikohtaiset kustannukset ja ulkolämpötila',
+fig.add_trace(go.Scatter(x=plot['aika'], y=plot['spot_snt'],
+                         name='Pörssisähkö', mode='lines+markers',
+                         line=dict(color='#16834a', width=2, dash='dash'),
+                         yaxis='y3',
+                         hovertemplate='%{x|%H:%M}<br>Pörssisähkö: %{y:.2f} snt/kWh<extra></extra>'))
+fig.update_layout(title='Tuntikohtaiset kustannukset, ulkolämpötila ja pörssisähkö',
                   hovermode='x unified', legend=dict(orientation='h', y=1.1),
-                  margin=dict(t=95), xaxis=dict(title='Kellonaika', tickformat='%H:%M', dtick=3600000))
+                  margin=dict(t=95, r=135),
+                  xaxis=dict(title='Kellonaika', tickformat='%H:%M', dtick=3600000),
+                  yaxis3=dict(title=dict(text='Pörssisähkö (snt/kWh)', font=dict(color='#16834a')),
+                              overlaying='y', side='right', anchor='free', position=1,
+                              tickfont=dict(color='#16834a'), showgrid=False))
 fig.update_yaxes(title_text='Lämmityskustannus (€/h)', secondary_y=False)
-fig.update_yaxes(title_text='Ulkolämpötila (°C)', secondary_y=True, showgrid=False, tickformat='.0f', dtick=1)
+fig.update_yaxes(title_text='Ulkolämpötila (°C)', secondary_y=True,
+                 showgrid=False, tickformat='.0f', dtick=1, automargin=True)
+# Siirretään lämpötila-akselia hieman kuvaajan oikeasta reunasta vasemmalle.
+fig.update_layout(yaxis2=dict(anchor='free', overlaying='y', side='right', position=0.91),
+                  xaxis=dict(domain=[0, 0.91]))
 st.plotly_chart(fig, use_container_width=True)
 
 show = plot.rename(columns={
