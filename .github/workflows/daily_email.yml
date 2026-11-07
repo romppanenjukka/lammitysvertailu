@@ -6,8 +6,6 @@ on:
   #kellon aika on talvella + 2h
     - cron: '59 14 * * *'
     
-    
- 
   workflow_dispatch:
 
 permissions:
