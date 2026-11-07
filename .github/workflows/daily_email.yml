@@ -1,9 +1,9 @@
 
-name: Huomisen lammitysvertailu sahkopostiin
+name: Huomisen lämmitysvertailu sähköpostiin
 
 on:
   schedule:
-    - cron: '49 14 * * *'
+    - cron: '59 14 * * *'
     
   workflow_dispatch:
 
@@ -24,9 +24,12 @@ jobs:
           cache: 'pip'
 
       - name: Asenna kirjastot
-        run: pip install -r requirements.txt
+        run: |
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
 
-      - name: Laheta vertailu
+      - name: Lähetä vertailu
         env:
           GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
