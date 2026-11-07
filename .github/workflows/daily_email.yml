@@ -3,7 +3,7 @@ name: Huomisen lammitysvertailu sahkopostiin
 
 on:
   schedule:
-    - cron: '20 15 * * *'
+    - cron: '31 16 * * *'
       timezone: 'Europe/Helsinki'
   workflow_dispatch:
 
