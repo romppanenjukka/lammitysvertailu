@@ -3,7 +3,7 @@ name: Huomisen lammitysvertailu sahkopostiin
 
 on:
   schedule:
-    - cron: '48 16 * * *'
+    - cron: '49 14 * * *'
     
   workflow_dispatch:
 
