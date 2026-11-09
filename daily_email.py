@@ -26,7 +26,7 @@ def build_report():
     hinta = result['sahko_yht_snt']
     if not np.isfinite(hinta.to_numpy(dtype=float)).all() or (hinta == 0).any():
         raise ValueError('VILP:n sähkönkulutusta ei voida laskea: sähkön kokonaishinnassa on nolla tai virheellinen arvo.')
-    vilp_kwh = float((result['vilp_euro'] * 100 / hinta).sum())
+    vilp_kwh = float(result['vilp_sahko_kwh'].sum())
     if not np.isfinite(vilp_kwh):
         raise ValueError('VILP:n sähkönkulutuksen tulos ei ole kelvollinen.')
 
