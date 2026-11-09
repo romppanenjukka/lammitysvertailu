@@ -4,45 +4,55 @@ import smtplib
 import sys
 from datetime import datetime
 from email.message import EmailMessage
-from zoneinfo import ZoneInfo
+
+import numpy as np
 
 from calculator import calculate
 from data import load_day
 
 APP_URL = 'https://lammitysvertailu.streamlit.app'
-TZ = ZoneInfo('Europe/Helsinki')
 
 
 def build_report():
     raw, day = load_day('huomenna')
     result = calculate(raw, pellet_price=0.38, transfer=4.47, tax=2.917,
                        margin=0.50, use_heater=True)
+
     vilp = float(result['vilp_euro'].sum())
     pelletti = float(result['pelletti_euro'].sum())
-    # VILP:n sähkönkulutus, sisältää mallinnetun lisävastuksen.
-vilp_kwh = (
-    result['vilp_euro'] * 100
-    / result['sahko_yht_snt']
-).sum()
+
+    # Johdetaan sähkönkulutus tuntikustannuksista ja kokonaishinnasta.
+    # Tarkistetaan nollahinnat ja puuttuvat arvot, jotta tulos ei vääristy.
+    hinta = result['sahko_yht_snt']
+    if not np.isfinite(hinta.to_numpy(dtype=float)).all() or (hinta == 0).any():
+        raise ValueError('VILP:n sähkönkulutusta ei voida laskea: sähkön kokonaishinnassa on nolla tai virheellinen arvo.')
+    vilp_kwh = float((result['vilp_euro'] * 100 / hinta).sum())
+    if not np.isfinite(vilp_kwh):
+        raise ValueError('VILP:n sähkönkulutuksen tulos ei ole kelvollinen.')
+
     difference = abs(vilp - pelletti)
-    if abs(vilp - pelletti) < 0.005:
+    if difference < 0.005:
         verdict = 'Lämmitysmuotojen kustannukset ovat käytännössä samat.'
     else:
         verdict = ('VILP' if vilp < pelletti else 'Pelletti') + ' on laskennallisesti halvempi.'
+
     warnings = []
     deficit = float(result['tehovaje_kwh'].sum())
     if deficit > 0.01:
         warnings.append(f'VAROITUS: VILP:n mallinnettu tehovaje on {deficit:.1f} kWh; VILP:n kustannus ei kata koko lämmöntarvetta.')
     if bool(result['epavarma'].any()):
         warnings.append('HUOM: Osa lämpötiloista on mitatun COP-alueen ulkopuolella; arvio on epävarma.')
-    subject = f'Lämmitysvertailu {datetime.fromisoformat(day).strftime("%d.%m.%Y")} – {verdict}'
+
+    date_str = datetime.fromisoformat(str(day)).strftime('%d.%m.%Y')
+    subject = f'Lämmitysvertailu {date_str} – {verdict}'
     body = '\n'.join([
-        f'HUOMISEN LÄMMITYSVERTAILU – {datetime.fromisoformat(day).strftime("%d.%m.%Y")}',
+        f'HUOMISEN LÄMMITYSVERTAILU – {date_str}',
         '', verdict, '',
         f'VILP:       {vilp:.2f} €/vrk',
         f'Pelletti:   {pelletti:.2f} €/vrk',
         f'Kustannusero: {difference:.2f} €/vrk',
         f'Lämmöntarve: {result["lammontarve_kwh"].sum():.1f} kWh/vrk',
+        f'VILP:n sähkönkulutus: {vilp_kwh:.1f} kWh/vrk',
         '', *warnings, '',
         'Vertailu on laskennallinen, ei lämmitystavan vaihtosuositus.',
         'Pellettihinta 0,38 €/kg, hyötysuhde 85 %; siirto 4,47, sähkövero 2,917 ja marginaali 0,50 snt/kWh.',
@@ -58,7 +68,6 @@ def main():
     password = os.environ['GMAIL_APP_PASSWORD']
 
     subject, body = build_report()
-
     msg = EmailMessage()
     msg['Subject'] = subject
     msg['From'] = sender
