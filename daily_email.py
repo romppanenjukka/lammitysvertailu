@@ -48,23 +48,22 @@ def build_report():
 
 
 def main():
-    # Ajastetaan kaksi UTC-ajankohtaa kesä-/talviajan vuoksi.
-    # Väärään paikalliseen kellonaikaan osuva ajo päättyy lähettämättä.
-    if os.getenv('GITHUB_EVENT_NAME') == 'schedule' and datetime.now(TZ).hour != 15:
-        print('Ei klo 15 Suomessa; ohitetaan tämä UTC-ajo.')
-        return
     sender = os.environ['GMAIL_ADDRESS']
     recipient = os.environ['MAIL_TO']
     password = os.environ['GMAIL_APP_PASSWORD']
-    subject, body = build_report()  # Puuttuvat hinnat -> virhe, ei harhaanjohtavaa viestiä.
+
+    subject, body = build_report()
+
     msg = EmailMessage()
     msg['Subject'] = subject
     msg['From'] = sender
     msg['To'] = recipient
     msg.set_content(body)
+
     with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=30) as smtp:
         smtp.login(sender, password)
         smtp.send_message(msg)
+
     print('Sähköposti lähetetty. Aihe:', subject)
 
 
