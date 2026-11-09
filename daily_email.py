@@ -19,6 +19,11 @@ def build_report():
                        margin=0.50, use_heater=True)
     vilp = float(result['vilp_euro'].sum())
     pelletti = float(result['pelletti_euro'].sum())
+    # VILP:n sähkönkulutus, sisältää mallinnetun lisävastuksen.
+vilp_kwh = (
+    result['vilp_euro'] * 100
+    / result['sahko_yht_snt']
+).sum()
     difference = abs(vilp - pelletti)
     if abs(vilp - pelletti) < 0.005:
         verdict = 'Lämmitysmuotojen kustannukset ovat käytännössä samat.'
