@@ -3,8 +3,8 @@ name: Huomisen lämmitysvertailu sähköpostiin
 
 on:
   schedule:
-    - cron: '30 14 * * *'
-      timezone: 'Europe/Helsinki'
+    - cron: '05 15 * * *'
+    
   workflow_dispatch:
 
 permissions:
